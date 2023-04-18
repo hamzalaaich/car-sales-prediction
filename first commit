@@ -1,0 +1,71 @@
+Linear Regression Case Study
+Steps for Regression Modeling:
+Business problem definition - One of major automobile company would like to design new product which can improve the sales. Inorder to define the product, they want to understand/identify drivers for the sales (what are the factors driving sales) and Predicting sales of different car models given driving factors.
+Convert business problem into statistical problem sales = F(sales attributes, product features, marketing info etc.)
+Finding the right technique - Since it is predicting value (Regression Problem) problem so we can use OLS as one of the technique. We can also use other techniques like Decision Trees, Ensemble learning, KNN, SVM, ANN etc.
+Data colletion(Y, X) - Identify the sources of information and collect the data
+Consolidate the data - aggregate and consolidate the data at Model level/customer level/store level depends on business problem
+Data preparation for modeling (create data audit report to identify the steps to perform as part of data preparation) a. missing value treatment b. outlier treatment c. dummy variable creation
+Variable creation by using transformation and derived variable creation.
+Basic assumptions (Normality, linearity, no outliers, homoscadasticity, no pattern in residuals, no auto correlation etc)
+Variable reduction techniques (removing multicollinerity with the help of FA/PCA, correlation matrics, VIF)
+Create dev and validation data sets (50:50 if you have more data else 70:30 or 80:20)
+Modeling on dev data set (identify significant variables, model interpretation, check the signs and coefficients, multi-collinierity check, measures of good neess fit, final mathematical equation etc)
+validating on validation data set (check the stability of model, scoring, decile analysis, cross validation etc.)
+Output interpretation and derive insights (understand the limitations of the model and define strategy to implementation)
+convert statistical solution into business solutions (implementation, model monitoring etc)
+import the packages
+
+import pandas as pd
+import numpy as np
+import matplotlib.pyplot as plt
+import seaborn as sns
+
+#!pip install pandas_profiling 
+import pandas_profiling 
+import scipy.stats as stats
+import statsmodels as sm
+%matplotlib inline
+
+import sklearn as sk
+
+plt.rcParams['figure.figsize'] = 6, 4
+plt.rcParams['axes.grid'] = True
+port statsmodels.formula.api as smf
+
+from sklearn.model_selection import train_test_split
+
+from sklearn.linear_model import LinearRegression
+from sklearn.metrics import mean_absolute_error, mean_squared_error, r2_score
+# Create Data audit Report for continuous variables
+def continuous_var_summary(x):
+    return pd.Series([x.count(), x.isnull().sum(), x.sum(), x.mean(), x.median(),  
+                      x.std(), x.var(), x.min(), x.quantile(0.01), x.quantile(0.05),
+                          x.quantile(0.10),x.quantile(0.25),x.quantile(0.50),x.quantile(0.75), 
+                              x.quantile(0.90),x.quantile(0.95), x.quantile(0.99),x.max()], 
+                  index = ['N', 'NMISS', 'SUM', 'MEAN','MEDIAN', 'STD', 'VAR', 'MIN', 'P1', 
+                               'P5' ,'P10' ,'P25' ,'P50' ,'P75' ,'P90' ,'P95' ,'P99' ,'MAX'])
+  
+  # Create Data audit Report for categorical variables
+def categorical_var_summary(x):
+    Mode = x.value_counts().sort_values(ascending = False)[0:1].reset_index()
+    return pd.Series([x.count(), x.isnull().sum(), Mode.iloc[0, 0], Mode.iloc[0, 1], 
+                          round(Mode.iloc[0, 1] * 100/x.count(), 2)], 
+                  index = ['N', 'NMISS', 'MODE', 'FREQ', 'PERCENT'])
+                 
+   # Missing value imputation for categorical and continuous variables
+def missing_imputation(x, stats = 'mean'):
+    if (x.dtypes == 'float64') | (x.dtypes == 'int64'):
+        x = x.fillna(x.mean()) if stats == 'mean' else x.fillna(x.median())
+    else:
+        x = x.fillna(x.mode())
+    return x
+# An utility function to create dummy variable
+def create_dummies(df, colname):
+    col_dummies = pd.get_dummies(df[colname], prefix = colname, drop_first = True)
+    df = pd.concat([df, col_dummies], axis = 1)
+    df.drop(colname, axis = 1, inplace = True )
+    return df
+    
+ 
+                               
